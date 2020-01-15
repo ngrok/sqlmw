@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/inconshreveable/sqlmw?status.svg)](https://godoc.org/github.com/inconshreveable/sqlmw)
+[![GoDoc](https://godoc.org/github.com/ngrok/sqlmw?status.svg)](https://godoc.org/github.com/ngrok/sqlmw)
 
 # sqlmw
 sqlmw provides an absurdly simple API that allows a caller to "wrap" another database/sql driver
@@ -39,7 +39,7 @@ func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.Stmt
 }
 ```
 
-You may override any subset of methods to intercept in the `Interceptor` interface (https://godoc.org/github.com/inconshreveable/sqlmw#Interceptor):
+You may override any subset of methods to intercept in the `Interceptor` interface (https://godoc.org/github.com/ngrok/sqlmw#Interceptor):
 
 ```
 type Interceptor interface {

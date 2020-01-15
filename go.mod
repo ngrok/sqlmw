@@ -1,3 +1,3 @@
-module github.com/inconshreveable/sqlmw
+module github.com/ngrok/sqlmw
 
 go 1.13
