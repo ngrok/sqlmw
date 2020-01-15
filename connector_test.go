@@ -28,7 +28,7 @@ func TestConnectorWithDriverContext(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			d := WrappedDriver{parent: &driverContextMock{err: test.openConnectorErr}}
+			d := wrappedDriver{parent: &driverContextMock{err: test.openConnectorErr}}
 			conn, err := d.OpenConnector("some-dsn")
 			if err != nil {
 				if test.expectErr {
@@ -51,7 +51,7 @@ func TestConnectorWithDriverContext(t *testing.T) {
 }
 
 func TestConnectorWithDriver(t *testing.T) {
-	d := WrappedDriver{parent: &driverMock{}}
+	d := wrappedDriver{parent: &driverMock{}}
 	conn, err := d.OpenConnector("some-dsn")
 	if err != nil {
 		t.Fatalf("unexpected error from wrapped OpenConnector impl: %+v\n", err)
