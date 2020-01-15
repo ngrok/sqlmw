@@ -1,21 +1,21 @@
 [![GoDoc](https://godoc.org/github.com/ngrok/sqlmw?status.svg)](https://godoc.org/github.com/ngrok/sqlmw)
 
 # sqlmw
-sqlmw provides an absurdly simple API that allows a caller to "wrap" another database/sql driver
+sqlmw provides an absurdly simple API that allows a caller to wrap a `database/sql` driver
 with middleware.
 
-Think grpc interceptors or http middleware but for the database/sql package. This allows a caller to implement
-observability like tracing and logging easily. More importantly, it also enables far more powerful behaviors like
-transparently modifying arguments, results or query execution strategy. This power allows programmers to implement
-behaviors like automatic sharding, selective tracing, automatic caching, transparent query mirroring, retries, failover, and more.
+This provides an abstraction similar to http middleware or grpc interceptors but for the database/sql package.
+This allows a caller to implement observability like tracing and logging easily. More importantly, it also enables
+powerful possible behaviors like transparently modifying arguments, results or query execution strategy. This power allows programmers to implement
+functionality like automatic sharding, selective tracing, automatic caching, transparent query mirroring, retries, failover 
+in a reuseable way, and more.
 
 ## Usage
-
-It's absurdly simple:
 
 - Define a new type and embed the `sqlmw.NullInterceptor` type.
 - Add a method you want to intercept from the `sqlmw.Interceptor` interface.
 - Wrap the driver with your interceptor with `sqlmw.Driver` and then install it with `sql.Register`.
+- Use `sql.Open` on the new driver string that was passed to register.
 
 Here's a complete example:
 
@@ -74,11 +74,53 @@ type Interceptor interface {
 Bear in mind that becase you are intercepting the calls entirely, that you are responsible for passing control up to the wrapped
 driver in any function that you override, like so:
 
-```
-func (in *sqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
-        return conn.Ping(ctx)
-}
-```
+    func (in *sqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
+            return conn.Ping(ctx)
+    }
+
+## Examples
+
+### Logging
+
+    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+            startedAt := time.Now()
+            rows, err := conn.QueryContext(ctx, args)
+            log.Debug("executed sql query", "duration", time.Since(startedAt), "query", query, "args", args, "err", err)
+            return rows, err
+    }
+
+### Tracing
+
+    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+            span := trace.FromContext(ctx).NewSpan(ctx, "StmtQueryContext")
+            span.Tags["query"] = query
+            defer span.Finish()
+            rows, err := conn.QueryContext(ctx, args)
+            if err != nil {
+                    span.Error(err)
+            }
+            return rows, err
+    }
+
+### Retries
+
+    func (in *sqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+            for {
+                    rows, err := conn.QueryContext(ctx, args)
+                    if err == nil {
+                            return rows, nil
+                    }
+                    if err != nil && !isIdempotent(query) {
+                            return nil, err
+                    }
+                    select {
+                    case <-ctx.Done():
+                            return nil, ctx.Err()
+                    case <-time.After(time.Second):
+                    }
+            }
+    }
+
 
 ## Comaprison with similar projects
 
