@@ -1,4 +1,4 @@
-package instrumentedsql
+package sqlmw
 
 import (
 	"context"

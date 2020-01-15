@@ -1,6 +1,6 @@
 // +build go1.9
 
-package instrumentedsql
+package sqlmw
 
 import "database/sql/driver"
 

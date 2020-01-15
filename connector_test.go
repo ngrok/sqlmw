@@ -1,6 +1,6 @@
 // +build go1.10
 
-package instrumentedsql
+package sqlmw
 
 import (
 	"context"
