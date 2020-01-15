@@ -35,6 +35,9 @@ type Interceptor interface {
 
 var _ Interceptor = NullInterceptor{}
 
+// NullInterceptor is a complete passthrough interceptor that implements every method of the Interceptor
+// interface and performs no additional logic. Users should Embed it in their own interceptor so that they
+// only need to define the specific functions they are interested in intercepting.
 type NullInterceptor struct{}
 
 func (NullInterceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (driver.Tx, error) {

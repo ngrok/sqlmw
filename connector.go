@@ -9,7 +9,7 @@ import (
 
 type wrappedConnector struct {
 	parent    driver.Connector
-	driverRef *WrappedDriver
+	driverRef *wrappedDriver
 }
 
 var (
