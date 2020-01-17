@@ -4,10 +4,10 @@
 sqlmw provides an absurdly simple API that allows a caller to wrap a `database/sql` driver
 with middleware.
 
-This provides an abstraction similar to http middleware or grpc interceptors but for the database/sql package.
+This provides an abstraction similar to http middleware or GRPC interceptors but for the database/sql package.
 This allows a caller to implement observability like tracing and logging easily. More importantly, it also enables
 powerful possible behaviors like transparently modifying arguments, results or query execution strategy. This power allows programmers to implement
-functionality like automatic sharding, selective tracing, automatic caching, transparent query mirroring, retries, failover 
+functionality like automatic sharding, selective tracing, automatic caching, transparent query mirroring, retries, fail-over 
 in a reuseable way, and more.
 
 ## Usage
@@ -22,7 +22,7 @@ Here's a complete example:
 ```
 func run(dsn string) {
         // install the wrapped driver
-        sql.Register("postgres-mw", sqlmw.Driver(pq.Dirver{}, new(sqlInterceptor)))
+        sql.Register("postgres-mw", sqlmw.Driver(pq.Driver{}, new(sqlInterceptor)))
         db, err := sql.Open("postgres-mw", dsn)
         ...
 }
@@ -71,7 +71,7 @@ type Interceptor interface {
 }
 ```
 
-Bear in mind that becase you are intercepting the calls entirely, that you are responsible for passing control up to the wrapped
+Bear in mind that because you are intercepting the calls entirely, that you are responsible for passing control up to the wrapped
 driver in any function that you override, like so:
 
     func (in *sqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
@@ -122,7 +122,7 @@ driver in any function that you override, like so:
     }
 
 
-## Comaprison with similar projects
+## Comparison with similar projects
 
 There are a number of other packages that allow the programmer to wrap a `database/sql/driver.Driver` to add logging or tracing.
 
@@ -133,7 +133,7 @@ Examples of tracing packages:
 
 A few provide a much more flexible setup of arbitrary before/after hooks to facilitate custom observability.
 
-Pacakges that provide before/after hooks:
+Packages that provide before/after hooks:
   - github.com/gchaincl/sqlhooks
   - github.com/shogo82148/go-sql-proxy
 
