@@ -10,6 +10,7 @@ type wrappedStmt struct {
 	ctx    context.Context
 	query  string
 	parent driver.Stmt
+	conn   wrappedConn
 }
 
 // Compile time validation that our types implement the expected interfaces
