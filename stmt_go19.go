@@ -13,5 +13,5 @@ func (s wrappedStmt) CheckNamedValue(v *driver.NamedValue) error {
 		return checker.CheckNamedValue(v)
 	}
 
-	return driver.ErrSkip
+	return defaultCheckNamedValue(v)
 }
