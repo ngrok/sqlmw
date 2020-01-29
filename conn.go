@@ -27,7 +27,7 @@ func (c wrappedConn) Prepare(query string) (driver.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return wrappedStmt{intr: c.intr, query: query, parent: stmt}, nil
+	return wrappedStmt{intr: c.intr, query: query, parent: stmt, conn: c}, nil
 }
 
 func (c wrappedConn) Close() error {
@@ -57,7 +57,7 @@ func (c wrappedConn) PrepareContext(ctx context.Context, query string) (stmt dri
 	if err != nil {
 		return nil, err
 	}
-	return wrappedStmt{intr: c.intr, ctx: ctx, query: query, parent: stmt}, nil
+	return wrappedStmt{intr: c.intr, ctx: ctx, query: query, parent: stmt, conn: c}, nil
 }
 
 func (c wrappedConn) Exec(query string, args []driver.Value) (driver.Result, error) {
