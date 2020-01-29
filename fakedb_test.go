@@ -68,6 +68,7 @@ func (c *fakeConn) PrepareContext(_ context.Context, _ string) (driver.Stmt, err
 }
 
 func (c *fakeConn) Close() error              { return nil }
+
 func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
 
 func (c *fakeConn) QueryContext(_ context.Context, _ string, _ []driver.NamedValue) (driver.Rows, error) {
