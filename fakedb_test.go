@@ -14,7 +14,8 @@ func (d *fakeDriver) Open(_ string) (driver.Conn, error) {
 }
 
 type fakeStmt struct {
-	called bool
+	checkNamedValueCalled bool
+	columnConverterCalled bool
 }
 
 type fakeStmtWithCheckNamedValue struct {
@@ -22,6 +23,10 @@ type fakeStmtWithCheckNamedValue struct {
 }
 
 type fakeStmtWithoutCheckNamedValue struct {
+	fakeStmt
+}
+
+type fakeStmtWithColumnConverter struct {
 	fakeStmt
 }
 
@@ -41,8 +46,13 @@ func (s fakeStmt) Query(_ []driver.Value) (driver.Rows, error) {
 	return nil, nil
 }
 
+func (s *fakeStmtWithColumnConverter) ColumnConverter(_ int) driver.ValueConverter {
+	s.columnConverterCalled = true
+	return driver.DefaultParameterConverter
+}
+
 func (s *fakeStmtWithCheckNamedValue) CheckNamedValue(_ *driver.NamedValue) (err error) {
-	s.called = true
+	s.checkNamedValueCalled = true
 	return
 }
 
@@ -67,7 +77,7 @@ func (c *fakeConn) PrepareContext(_ context.Context, _ string) (driver.Stmt, err
 	return c.stmt, nil
 }
 
-func (c *fakeConn) Close() error              { return nil }
+func (c *fakeConn) Close() error { return nil }
 
 func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
 
