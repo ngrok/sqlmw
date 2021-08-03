@@ -10,8 +10,10 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 	tests := map[string]struct {
 		fd       *fakeDriver
 		expected struct {
-			cc bool // Whether the fakeConn's CheckNamedValue was called
-			sc bool // Whether the fakeStmt's CheckNamedValue was called
+			cc  bool // Whether the fakeConn's CheckNamedValue was called
+			sc  bool // Whether the fakeStmt's CheckNamedValue was called
+			cci bool // Whether the fakeStmt's ColumnConverter was called
+
 		}
 	}{
 		"When both conn and stmt implement CheckNamedValue": {
@@ -23,8 +25,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 				},
 			},
 			expected: struct {
-				cc bool
-				sc bool
+				cc  bool
+				sc  bool
+				cci bool
 			}{cc: false, sc: true},
 		},
 		"When only conn implements CheckNamedValue": {
@@ -36,8 +39,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 				},
 			},
 			expected: struct {
-				cc bool
-				sc bool
+				cc  bool
+				sc  bool
+				cci bool
 			}{cc: true, sc: false},
 		},
 		"When only stmt implements CheckNamedValue": {
@@ -49,9 +53,24 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 				},
 			},
 			expected: struct {
-				cc bool
-				sc bool
+				cc  bool
+				sc  bool
+				cci bool
 			}{cc: false, sc: true},
+		},
+		"When only stmt implements ColumnConverter": {
+			fd: &fakeDriver{
+				conn: &fakeConnWithoutCheckNamedValue{
+					fakeConn: fakeConn{
+						stmt: &fakeStmtWithColumnConverter{},
+					},
+				},
+			},
+			expected: struct {
+				cc  bool
+				sc  bool
+				cci bool
+			}{cci: true},
 		},
 		"When both stmt do not implement CheckNamedValue": {
 			fd: &fakeDriver{
@@ -62,8 +81,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 				},
 			},
 			expected: struct {
-				cc bool
-				sc bool
+				cc  bool
+				sc  bool
+				cci bool
 			}{cc: false, sc: false},
 		},
 	}
@@ -91,8 +111,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 			}
 
 			conn := reflect.ValueOf(test.fd.conn).Elem()
-			sc := conn.FieldByName("stmt").Elem().Elem().FieldByName("called").Bool()
+			sc := conn.FieldByName("stmt").Elem().Elem().FieldByName("checkNamedValueCalled").Bool()
 			cc := conn.FieldByName("called").Bool()
+			cci := conn.FieldByName("stmt").Elem().Elem().FieldByName("columnConverterCalled").Bool()
 
 			if test.expected.sc != sc {
 				t.Errorf("sc mismatch.\n got: %#v\nwant: %#v", sc, test.expected.sc)
@@ -100,6 +121,10 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 
 			if test.expected.cc != cc {
 				t.Errorf("cc mismatch.\n got: %#v\nwant: %#v", cc, test.expected.cc)
+			}
+
+			if test.expected.cci != cci {
+				t.Errorf("columnConverterCalled mismatch.\n got: %#v\nwant: %#v", cci, test.expected.cci)
 			}
 		})
 	}
