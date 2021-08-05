@@ -27,7 +27,7 @@ func (r wrappedRows) Columns() []string {
 }
 
 func (r wrappedRows) Close() error {
-	return r.intr.RowsClose(r.ctx, r.parent)
+	return r.intr.RowsClose(r.parent)
 }
 
 func (r wrappedRows) Next(dest []driver.Value) (err error) {
