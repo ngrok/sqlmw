@@ -56,9 +56,28 @@ func (s *fakeStmtWithCheckNamedValue) CheckNamedValue(_ *driver.NamedValue) (err
 	return
 }
 
+type fakeRows struct {
+	con         *fakeConn
+	closeCalled bool
+}
+
+func (r *fakeRows) Close() error {
+	r.con.rowsCloseCalled = true
+	return nil
+}
+
+func (r *fakeRows) Columns() []string {
+	return nil
+}
+
+func (r *fakeRows) Next(_ []driver.Value) error {
+	return nil
+}
+
 type fakeConn struct {
-	called bool
-	stmt   driver.Stmt
+	called          bool
+	rowsCloseCalled bool
+	stmt            driver.Stmt
 }
 
 type fakeConnWithCheckNamedValue struct {
@@ -82,7 +101,7 @@ func (c *fakeConn) Close() error { return nil }
 func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
 
 func (c *fakeConn) QueryContext(_ context.Context, _ string, _ []driver.NamedValue) (driver.Rows, error) {
-	return nil, nil
+	return &fakeRows{con: c}, nil
 }
 
 func (c *fakeConnWithCheckNamedValue) CheckNamedValue(_ *driver.NamedValue) (err error) {
