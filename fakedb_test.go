@@ -25,6 +25,16 @@ type fakeStmtWithoutCheckNamedValue struct {
 	fakeStmt
 }
 
+type fakeStmtWithValStore struct {
+	fakeStmt
+	val []driver.Value
+}
+
+func (s *fakeStmtWithValStore) Query(v []driver.Value) (driver.Rows, error) {
+	s.val = v
+	return nil, nil
+}
+
 func (s fakeStmt) Close() error {
 	return nil
 }
@@ -86,7 +96,7 @@ func (c *fakeConn) PrepareContext(_ context.Context, _ string) (driver.Stmt, err
 	return c.stmt, nil
 }
 
-func (c *fakeConn) Close() error              { return nil }
+func (c *fakeConn) Close() error { return nil }
 
 func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
 
