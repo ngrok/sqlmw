@@ -1,7 +1,6 @@
 package sqlmw
 
 import (
-	"context"
 	"database/sql/driver"
 )
 
@@ -18,7 +17,6 @@ var (
 
 type wrappedRows struct {
 	intr   Interceptor
-	ctx    context.Context
 	parent driver.Rows
 }
 
@@ -27,9 +25,9 @@ func (r wrappedRows) Columns() []string {
 }
 
 func (r wrappedRows) Close() error {
-	return r.intr.RowsClose(r.ctx, r.parent)
+	return r.intr.RowsClose(r.parent)
 }
 
 func (r wrappedRows) Next(dest []driver.Value) (err error) {
-	return r.intr.RowsNext(r.ctx, r.parent, dest)
+	return r.intr.RowsNext(r.parent, dest)
 }

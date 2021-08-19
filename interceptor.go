@@ -21,17 +21,17 @@ type Interceptor interface {
 	ResultRowsAffected(driver.Result) (int64, error)
 
 	// Rows interceptors
-	RowsNext(context.Context, driver.Rows, []driver.Value) error
-	RowsClose(context.Context, driver.Rows) error
+	RowsNext(driver.Rows, []driver.Value) error
+	RowsClose(driver.Rows) error
 
 	// Stmt interceptors
 	StmtExecContext(context.Context, driver.StmtExecContext, string, []driver.NamedValue) (driver.Result, error)
 	StmtQueryContext(context.Context, driver.StmtQueryContext, string, []driver.NamedValue) (driver.Rows, error)
-	StmtClose(context.Context, driver.Stmt) error
+	StmtClose(driver.Stmt) error
 
 	// Tx interceptors
-	TxCommit(context.Context, driver.Tx) error
-	TxRollback(context.Context, driver.Tx) error
+	TxCommit(driver.Tx) error
+	TxRollback(driver.Tx) error
 }
 
 var _ Interceptor = NullInterceptor{}
@@ -73,11 +73,11 @@ func (NullInterceptor) ResultRowsAffected(res driver.Result) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (NullInterceptor) RowsNext(ctx context.Context, rows driver.Rows, dest []driver.Value) error {
+func (NullInterceptor) RowsNext(rows driver.Rows, dest []driver.Value) error {
 	return rows.Next(dest)
 }
 
-func (NullInterceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
+func (NullInterceptor) RowsClose(rows driver.Rows) error {
 	return rows.Close()
 }
 
@@ -89,14 +89,14 @@ func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQue
 	return stmt.QueryContext(ctx, args)
 }
 
-func (NullInterceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
+func (NullInterceptor) StmtClose(stmt driver.Stmt) error {
 	return stmt.Close()
 }
 
-func (NullInterceptor) TxCommit(ctx context.Context, tx driver.Tx) error {
+func (NullInterceptor) TxCommit(tx driver.Tx) error {
 	return tx.Commit()
 }
 
-func (NullInterceptor) TxRollback(ctx context.Context, tx driver.Tx) error {
+func (NullInterceptor) TxRollback(tx driver.Tx) error {
 	return tx.Rollback()
 }

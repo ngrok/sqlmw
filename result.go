@@ -1,13 +1,11 @@
 package sqlmw
 
 import (
-	"context"
 	"database/sql/driver"
 )
 
 type wrappedResult struct {
 	intr   Interceptor
-	ctx    context.Context
 	parent driver.Result
 }
 

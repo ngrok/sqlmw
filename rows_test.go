@@ -10,13 +10,11 @@ import (
 type rowsCloseInterceptor struct {
 	NullInterceptor
 
-	rowsCloseCalled  bool
-	rowsCloseLastCtx context.Context
+	rowsCloseCalled bool
 }
 
-func (r *rowsCloseInterceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
+func (r *rowsCloseInterceptor) RowsClose(rows driver.Rows) error {
 	r.rowsCloseCalled = true
-	r.rowsCloseLastCtx = ctx
 
 	return rows.Close()
 }
@@ -33,13 +31,7 @@ func TestRowsClose(t *testing.T) {
 		t.Fatalf("opening db failed: %s", err)
 	}
 
-	ctx := context.Background()
-	ctxKey := "ctxkey"
-	ctxVal := "1"
-
-	ctx = context.WithValue(ctx, ctxKey, ctxVal)
-
-	rows, err := db.QueryContext(ctx, "", "")
+	rows, err := db.QueryContext(context.Background(), "", "")
 	if err != nil {
 		t.Fatalf("db.Query failed: %s", err)
 	}
@@ -51,24 +43,6 @@ func TestRowsClose(t *testing.T) {
 
 	if !interceptor.rowsCloseCalled {
 		t.Error("interceptor rows.Close was not called")
-	}
-
-	if interceptor.rowsCloseLastCtx == nil {
-		t.Fatal("rows close ctx is nil")
-	}
-
-	v := interceptor.rowsCloseLastCtx.Value(ctxKey)
-	if v == nil {
-		t.Fatalf("ctx is different, missing value for key: %s", ctxKey)
-	}
-
-	vStr, ok := v.(string)
-	if !ok {
-		t.Fatalf("ctx is different, value for key: %s, has type %t, expected string", ctxKey, v)
-	}
-
-	if ctxVal != vStr {
-		t.Errorf("ctx is different, value for key: %s, is %q, expected %q", ctxKey, vStr, ctxVal)
 	}
 
 	if !con.rowsCloseCalled {

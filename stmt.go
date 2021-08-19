@@ -7,7 +7,6 @@ import (
 
 type wrappedStmt struct {
 	intr   Interceptor
-	ctx    context.Context
 	query  string
 	parent driver.Stmt
 	conn   wrappedConn
@@ -22,7 +21,7 @@ var (
 )
 
 func (s wrappedStmt) Close() (err error) {
-	return s.intr.StmtClose(s.ctx, s.parent)
+	return s.intr.StmtClose(s.parent)
 }
 
 func (s wrappedStmt) NumInput() int {
@@ -34,7 +33,7 @@ func (s wrappedStmt) Exec(args []driver.Value) (res driver.Result, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return wrappedResult{intr: s.intr, ctx: s.ctx, parent: res}, nil
+	return wrappedResult{intr: s.intr, parent: res}, nil
 }
 
 func (s wrappedStmt) Query(args []driver.Value) (rows driver.Rows, err error) {
@@ -42,7 +41,7 @@ func (s wrappedStmt) Query(args []driver.Value) (rows driver.Rows, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return wrappedRows{intr: s.intr, ctx: s.ctx, parent: rows}, nil
+	return wrappedRows{intr: s.intr, parent: rows}, nil
 }
 
 func (s wrappedStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (res driver.Result, err error) {
@@ -51,7 +50,7 @@ func (s wrappedStmt) ExecContext(ctx context.Context, args []driver.NamedValue) 
 	if err != nil {
 		return nil, err
 	}
-	return wrappedResult{intr: s.intr, ctx: ctx, parent: res}, nil
+	return wrappedResult{intr: s.intr, parent: res}, nil
 }
 
 func (s wrappedStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
@@ -60,7 +59,7 @@ func (s wrappedStmt) QueryContext(ctx context.Context, args []driver.NamedValue)
 	if err != nil {
 		return nil, err
 	}
-	return wrappedRows{intr: s.intr, ctx: ctx, parent: rows}, nil
+	return wrappedRows{intr: s.intr, parent: rows}, nil
 }
 
 func (s wrappedStmt) ColumnConverter(idx int) driver.ValueConverter {

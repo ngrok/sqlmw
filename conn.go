@@ -48,7 +48,7 @@ func (c wrappedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx dri
 	if err != nil {
 		return nil, err
 	}
-	return wrappedTx{intr: c.intr, ctx: ctx, parent: tx}, nil
+	return wrappedTx{intr: c.intr, parent: tx}, nil
 }
 
 func (c wrappedConn) PrepareContext(ctx context.Context, query string) (stmt driver.Stmt, err error) {
@@ -57,7 +57,7 @@ func (c wrappedConn) PrepareContext(ctx context.Context, query string) (stmt dri
 	if err != nil {
 		return nil, err
 	}
-	return wrappedStmt{intr: c.intr, ctx: ctx, query: query, parent: stmt, conn: c}, nil
+	return wrappedStmt{intr: c.intr, query: query, parent: stmt, conn: c}, nil
 }
 
 func (c wrappedConn) Exec(query string, args []driver.Value) (driver.Result, error) {
@@ -78,7 +78,7 @@ func (c wrappedConn) ExecContext(ctx context.Context, query string, args []drive
 	if err != nil {
 		return nil, err
 	}
-	return wrappedResult{intr: c.intr, ctx: ctx, parent: r}, nil
+	return wrappedResult{intr: c.intr, parent: r}, nil
 }
 
 func (c wrappedConn) Ping(ctx context.Context) (err error) {
@@ -113,7 +113,7 @@ func (c wrappedConn) QueryContext(ctx context.Context, query string, args []driv
 		return nil, err
 	}
 
-	return wrappedRows{intr: c.intr, ctx: ctx, parent: rows}, nil
+	return wrappedRows{intr: c.intr, parent: rows}, nil
 }
 
 type wrappedParentConn struct {
