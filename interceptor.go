@@ -25,8 +25,8 @@ type Interceptor interface {
 	RowsClose(context.Context, driver.Rows) error
 
 	// Stmt interceptors
-	StmtExecContext(context.Context, driver.StmtExecContext, string, []driver.NamedValue) (driver.Result, error)
-	StmtQueryContext(context.Context, driver.StmtQueryContext, string, []driver.NamedValue) (driver.Rows, error)
+	StmtExecContext(context.Context, driver.StmtExecContext, []driver.NamedValue) (driver.Result, error)
+	StmtQueryContext(context.Context, driver.StmtQueryContext, []driver.NamedValue) (driver.Rows, error)
 	StmtClose(context.Context, driver.Stmt) error
 
 	// Tx interceptors
@@ -81,11 +81,11 @@ func (NullInterceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return rows.Close()
 }
 
-func (NullInterceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, _ string, args []driver.NamedValue) (driver.Result, error) {
+func (NullInterceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, args []driver.NamedValue) (driver.Result, error) {
 	return stmt.ExecContext(ctx, args)
 }
 
-func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, _ string, args []driver.NamedValue) (driver.Rows, error) {
+func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, args []driver.NamedValue) (driver.Rows, error) {
 	return stmt.QueryContext(ctx, args)
 }
 
