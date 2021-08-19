@@ -14,7 +14,7 @@ func (d *fakeDriver) Open(_ string) (driver.Conn, error) {
 }
 
 type fakeStmt struct {
-	called bool
+	called bool // nolint:structcheck // ignore unused warning, it is accessed via reflection
 }
 
 type fakeStmtWithCheckNamedValue struct {
@@ -48,7 +48,7 @@ func (s *fakeStmtWithCheckNamedValue) CheckNamedValue(_ *driver.NamedValue) (err
 
 type fakeRows struct {
 	con         *fakeConn
-	closeCalled bool
+	closeCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
 }
 
 func (r *fakeRows) Close() error {
@@ -65,7 +65,7 @@ func (r *fakeRows) Next(_ []driver.Value) error {
 }
 
 type fakeConn struct {
-	called          bool
+	called          bool // nolint:structcheck // ignore unused warning, it is accessed via reflection
 	rowsCloseCalled bool
 	stmt            driver.Stmt
 }
@@ -86,7 +86,7 @@ func (c *fakeConn) PrepareContext(_ context.Context, _ string) (driver.Stmt, err
 	return c.stmt, nil
 }
 
-func (c *fakeConn) Close() error              { return nil }
+func (c *fakeConn) Close() error { return nil }
 
 func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
 
