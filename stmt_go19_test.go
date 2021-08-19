@@ -6,6 +6,57 @@ import (
 	"testing"
 )
 
+// TestDefaultParameterConversion ensures that
+// driver.DefaultParameterConverter is used when neither stmt nor con
+// implements any value converters.
+func TestDefaultParameterConversion(t *testing.T) {
+	driverNameWithSQLmw := t.Name() + "sqlmw"
+	fakeStmt := fakeStmtWithValStore{}
+	sql.Register(
+		driverNameWithSQLmw,
+		Driver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &NullInterceptor{}),
+	)
+
+	db, err := sql.Open(driverNameWithSQLmw, "")
+	if err != nil {
+		t.Fatalf("Failed to open: %v", err)
+	}
+
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("Failed to close db: %v", err)
+		}
+	})
+
+	stmt, err := db.Prepare("")
+	if err != nil {
+		t.Fatalf("Prepare failed: %s", err)
+	}
+
+	// int32 values are converted by driver.DefaultParameterConverter to
+	// int64
+	queryVal := int32(1)
+	_, err = stmt.Query(queryVal)
+	if err != nil {
+		t.Fatalf("Query failed: %s", err)
+	}
+
+	if len(fakeStmt.val) != 1 {
+		t.Fatalf("fakestmt got %d values, expected %d", len(fakeStmt.val), 1)
+	}
+
+	switch v := fakeStmt.val[0].(type) {
+	case int32:
+		t.Errorf("int32 was not converted to int64 **without** using sqlmw")
+	case int64:
+		if v != int64(1) {
+			t.Errorf("converted value is %d, passed value to Query was: %d", v, queryVal)
+		}
+	default:
+		t.Errorf("converted value has type %T, expected int64", fakeStmt.val[0])
+	}
+}
+
 func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 	tests := map[string]struct {
 		fd       *fakeDriver
