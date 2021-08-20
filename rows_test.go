@@ -37,7 +37,7 @@ func TestRowsClose(t *testing.T) {
 	ctxKey := "ctxkey"
 	ctxVal := "1"
 
-	ctx = context.WithValue(ctx, ctxKey, ctxVal)
+	ctx = context.WithValue(ctx, ctxKey, ctxVal) // nolint: staticcheck // not using a custom type for the ctx key is not an issue here
 
 	rows, err := db.QueryContext(ctx, "", "")
 	if err != nil {
