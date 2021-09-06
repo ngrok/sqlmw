@@ -121,6 +121,9 @@ driver in any function that you override, like so:
             }
     }
 
+### Forwarding Data to method calls on Stmt, Tx, Rows
+
+See [interceptor_wrapping_example_test.go](interceptor_wrapping_example_test.go)
 
 ## Comparison with similar projects
 
