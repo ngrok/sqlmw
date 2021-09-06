@@ -148,3 +148,9 @@ Go versions 1.9 and forward are supported.
 ## Fork
 
 This project began by forking the code in github.com/luna-duclos/instrumentedsql, which itself is a fork of github.com/ExpansiveWorlds/instrumentedsql
+
+## Project Status
+
+sqlmw is an early stage. \
+A version that guarantees API compatibility has not been released yet. \
+Breaking API changes can happen anytime in the master branch.
