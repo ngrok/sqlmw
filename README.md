@@ -154,3 +154,11 @@ This project began by forking the code in github.com/luna-duclos/instrumentedsql
 sqlmw is an early stage. \
 A version that guarantees API compatibility has not been released yet. \
 Breaking API changes can happen anytime in the master branch.
+
+## Breaking Changes
+
+- unversioned -> 0.1.0
+  - `StmtExecContext`, `StmtQueryContext`, `StmtClose` Interceptor methods now
+	accepts a parameter of type `sqlmw.Stmt` instead of
+	`driver.Stmt`, change the parameter type of your `Interceptor`
+	implementations accordingly
