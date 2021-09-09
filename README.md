@@ -148,3 +148,9 @@ Go versions 1.9 and forward are supported.
 ## Fork
 
 This project began by forking the code in github.com/luna-duclos/instrumentedsql, which itself is a fork of github.com/ExpansiveWorlds/instrumentedsql
+
+## Breaking Changes
+
+- unversioned -> 0.1.0
+  - The `context.Context` parameter was removed from interceptor methods
+	`RowsNext`, `StmtClose`, `TxCommit` and `TxRollback`. [(#14)](https://github.com/ngrok/sqlmw/pull/14)
