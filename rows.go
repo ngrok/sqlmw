@@ -13,6 +13,22 @@ var (
 	_ driver.Rows = wrappedRows{}
 )
 
+// RowsUnwrapper must be used by any middleware that provides its own wrapping
+// for driver.Rows. RowsUnwrap should return the original driver.Rows the
+// middleware received. The result of RowsUnwrap is repeatedly unwrapped
+// until the result no longer implements the interface (this should be
+// the driver.Rows from the original database/sql driver). sqlmw will then
+// pass a type that matches the optional interface set of the driver.Rows
+// implementation of the original driver.
+//
+// If a middleware returns a custom driver.Rows, the custom implmentation
+// must support all the driver.Rows optional interfaces that are supported by
+// by the drivers that will be used with it. To support any arbitrary driver
+// all the optional methods must be supported.
+type RowsUnwrapper interface {
+	RowsUnwrap() driver.Rows
+}
+
 type wrappedRows struct {
 	intr   Interceptor
 	ctx    context.Context

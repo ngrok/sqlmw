@@ -1,3 +1,6 @@
+// Code generated using tool/rows_picker_gen.go DO NOT EDIT.
+// Date: Dec  2 16:24:25
+
 package sqlmw
 
 import (
@@ -975,9 +978,6 @@ func init() {
 	}
 }
 
-type RowsUnwrapper interface {
-	RowsUnwrap() driver.Rows
-}
 
 func wrapRows(ctx context.Context, intr Interceptor, r driver.Rows) driver.Rows {
 	or := r

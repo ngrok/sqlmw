@@ -1,3 +1,5 @@
+// +build ignore
+
 package main
 
 import (
@@ -6,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
@@ -31,6 +34,7 @@ func main() {
 		"ColumnTypeScanType",
 	}
 
+	genComment(out)
 	fmt.Fprintln(out, "package sqlmw")
 
 	fmt.Fprintln(out, "")
@@ -49,16 +53,12 @@ func main() {
 	genWrapRows(out, intfs)
 }
 
-/*
-const (
-	rowsNextResultSet = 1 << iota
-	rowsColumnTypeDatabaseTypeName
-	rowsColumnTypeLength
-	rowsColumnTypeNullable
-	rowsColumnTypePrecisionScale
-	rowsColumnTypeScanType
-)
-*/
+func genComment(w io.Writer) {
+	str := time.Now().Format(time.Stamp)
+	fmt.Fprintln(w, "// Code generated using tool/rows_picker_gen.go DO NOT EDIT.")
+	fmt.Fprintf(w, "// Date: %s\n", str)
+	fmt.Fprintln(w, "")
+}
 
 func genConst(w io.Writer, intfs []string) {
 	fmt.Fprintln(w, "const (")
@@ -114,10 +114,6 @@ func genPickerTable(w io.Writer, intfs []string) {
 }
 
 func genWrapRows(w io.Writer, intfs []string) {
-	fmt.Fprintln(w, `type RowsUnwrapper interface {
-	RowsUnwrap() driver.Rows
-}`)
-
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "func wrapRows(ctx context.Context, intr Interceptor, r driver.Rows) driver.Rows {")
 	fmt.Fprintln(w, `	or := r
