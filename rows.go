@@ -14,12 +14,14 @@ var (
 )
 
 // RowsUnwrapper must be used by any middleware that provides its own wrapping
-// for driver.Rows. RowsUnwrap should return the original driver.Rows the
-// middleware received. The result of RowsUnwrap is repeatedly unwrapped
-// until the result no longer implements the interface (this should be
-// the driver.Rows from the original database/sql driver). sqlmw will then
-// pass a type that matches the optional interface set of the driver.Rows
-// implementation of the original driver.
+// for driver.Rows. Unwrap should return the original driver.Rows the
+// middleware received. You may wish to wrap the driver.Rows returned by the
+// Query methods if you want to pass extra information from the Query call to
+// the subsequent RowsNext and RowsClose calls.
+//
+// sqlmw needs to retrieve the original driver.Rows in order to determine the
+// original set of optional methods supported by the driver.Rows of the
+// database driver in use by the caller.
 //
 // If a middleware returns a custom driver.Rows, the custom implmentation
 // must support all the driver.Rows optional interfaces that are supported by
