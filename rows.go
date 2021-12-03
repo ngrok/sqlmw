@@ -26,7 +26,7 @@ var (
 // by the drivers that will be used with it. To support any arbitrary driver
 // all the optional methods must be supported.
 type RowsUnwrapper interface {
-	RowsUnwrap() driver.Rows
+	Unwrap() driver.Rows
 }
 
 type wrappedRows struct {
