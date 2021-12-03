@@ -978,15 +978,14 @@ func init() {
 	}
 }
 
-
 func wrapRows(ctx context.Context, intr Interceptor, r driver.Rows) driver.Rows {
 	or := r
 	for {
 		ur, ok := or.(RowsUnwrapper)
 		if !ok {
-		  break
+			break
 		}
-		or = ur.RowsUnwrap()
+		or = ur.Unwrap()
 	}
 
 	id := 0
