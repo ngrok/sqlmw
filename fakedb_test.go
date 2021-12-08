@@ -55,6 +55,15 @@ type fakeRows struct {
 	vals        [][]driver.Value
 	closeCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
 	nextCalled  bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+
+	//These are here so that we can check things have not been called
+	hasNextResultSetCalled         bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	nextResultSetCalled            bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	columnTypeDatabaseNameCalled   bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	columnTypeLengthCalled         bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	columnTypePrecisionScaleCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	columnTypeNullable             bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	columnTypeScanTypeCalled       bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
 }
 
 func (r *fakeRows) Close() error {
@@ -86,63 +95,70 @@ func (r *fakeRows) Next(dest []driver.Value) error {
 }
 
 type fakeWithRowsNextResultSet struct {
-	hasNextResultSetCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
-	nextResultSetCalled    bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r *fakeRows
 }
 
 func (f *fakeWithRowsNextResultSet) HasNextResultSet() bool {
-	f.hasNextResultSetCalled = true
+	f.r.hasNextResultSetCalled = true
 	return false
 }
 
 func (f *fakeWithRowsNextResultSet) NextResultSet() error {
-	f.nextResultSetCalled = true
+	f.r.nextResultSetCalled = true
 	return nil
 }
 
 type fakeWithColumnTypeDatabaseName struct {
-	columnTypeDatabaseNameCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r     *fakeRows
+	names []string
 }
 
-func (f *fakeWithColumnTypeDatabaseName) ColumnTypeDatabaseTypeName(i int) string {
-	f.columnTypeDatabaseNameCalled = true
-	return "sometype"
+func (f *fakeWithColumnTypeDatabaseName) ColumnTypeDatabaseTypeName(index int) string {
+	f.r.columnTypeDatabaseNameCalled = true
+	return f.names[index]
 }
 
 type fakeWithColumnTypeLength struct {
-	columnTypeLengthCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r       *fakeRows
+	lengths []int64
+	bools   []bool
 }
 
 func (f *fakeWithColumnTypeLength) ColumnTypeLength(index int) (length int64, ok bool) {
-	f.columnTypeLengthCalled = true
-	return 4, true
+	f.r.columnTypeLengthCalled = true
+	return f.lengths[index], f.bools[index]
 }
 
 type fakeWithColumnTypePrecisionScale struct {
-	columnTypePrecisionScaleCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r                  *fakeRows
+	precisions, scales []int64
+	bools              []bool
 }
 
 func (f *fakeWithColumnTypePrecisionScale) ColumnTypePrecisionScale(index int) (precision, scale int64, ok bool) {
-	f.columnTypePrecisionScaleCalled = true
-	return 0, 0, false
+	f.r.columnTypePrecisionScaleCalled = true
+	return f.precisions[index], f.scales[index], f.bools[index]
 }
 
 type fakeWithColumnTypeNullable struct {
-	columnTypeNullable bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r         *fakeRows
+	nullables []bool
+	oks       []bool
 }
 
-func (f *fakeWithColumnTypeNullable) ColumnTypeNullable(i int) (nullable, ok bool) {
-	f.columnTypeNullable = true
-	return false, true
+func (f *fakeWithColumnTypeNullable) ColumnTypeNullable(index int) (nullable, ok bool) {
+	f.r.columnTypeNullable = true
+	return f.nullables[index], f.oks[index]
 }
 
 type fakeWithColumnTypeScanType struct {
-	columnTypeScanTypeCalled bool // nolint:structcheck,unused // ignore unused warning, it is accessed via reflection
+	r         *fakeRows
+	scanTypes []reflect.Type
 }
 
-func (f *fakeWithColumnTypeScanType) ColumnTypeScanType(i int) reflect.Type {
-	f.columnTypeScanTypeCalled = true
-	return reflect.TypeOf("")
+func (f *fakeWithColumnTypeScanType) ColumnTypeScanType(index int) reflect.Type {
+	f.r.columnTypeScanTypeCalled = true
+	return f.scanTypes[index]
 }
 
 type fakeRowsLikeMysql struct {
@@ -154,16 +170,8 @@ type fakeRowsLikeMysql struct {
 	fakeWithColumnTypeScanType
 }
 
+// The set of interfaces support by pgx and sqlite3
 type fakeRowsLikePgx struct {
-	fakeRows
-	fakeWithColumnTypeDatabaseName
-	fakeWithColumnTypeLength
-	fakeWithColumnTypePrecisionScale
-	fakeWithColumnTypeNullable
-	fakeWithColumnTypeScanType
-}
-
-type fakeRowsLikeSqlite3 struct {
 	fakeRows
 	fakeWithColumnTypeDatabaseName
 	fakeWithColumnTypeLength
