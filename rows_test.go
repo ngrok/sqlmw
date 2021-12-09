@@ -226,7 +226,7 @@ func TestRows_LikePGX(t *testing.T) {
 		t.Errorf("wrong column name or types count")
 	}
 
-	// There's no real way these can be called, but we'll text incase the
+	// There's no real way these can be called, but we'll test in case the
 	// test implementation changes
 	if rs.hasNextResultSetCalled {
 		t.Errorf("HasNextResultSetCalled, on non-supporting type, %v", err)
