@@ -94,7 +94,7 @@ func (c wrappedConn) Query(query string, args []driver.Value) (driver.Rows, erro
 		if err != nil {
 			return nil, err
 		}
-		return wrapRows(nil, c.intr, rows), nil //nolint
+		return wrapRows(context.Background(), c.intr, rows), nil //nolint
 	}
 	return nil, driver.ErrSkip
 }

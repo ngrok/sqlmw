@@ -126,7 +126,7 @@ func TestRowsNext(t *testing.T) {
 	for rs.Next() {
 		err := rs.Scan(&id, &name)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 
@@ -255,7 +255,7 @@ func TestRows_LikePGX(t *testing.T) {
 	for qrs.Next() {
 		err := qrs.Scan(&id, &name)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 
@@ -324,7 +324,7 @@ func TestWrapRows(t *testing.T) {
 			_, rok := rows.(driver.RowsNextResultSet)
 			_, wok := wr.(driver.RowsNextResultSet)
 			if rok != wok {
-				t.Fatalf("inconsinstent support for driver.RowsNextResultSet")
+				t.Fatalf("inconsistent support for driver.RowsNextResultSet")
 			}
 
 			_, rok = rows.(driver.RowsColumnTypeDatabaseTypeName)
