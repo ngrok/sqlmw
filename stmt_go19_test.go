@@ -2,6 +2,7 @@ package sqlmw
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"reflect"
 	"testing"
 )
@@ -10,14 +11,24 @@ import (
 // driver.DefaultParameterConverter is used when neither stmt nor con
 // implements any value converters.
 func TestDefaultParameterConversion(t *testing.T) {
-	driverNameWithSQLmw := t.Name() + "sqlmw"
-	fakeStmt := fakeStmtWithValStore{}
+	driverName := driverName(t)
+
+	expectVal := int64(1)
+	con := &fakeConn{}
+	fakeStmt := &fakeStmt{
+		rows: &fakeRows{
+			con:  con,
+			vals: [][]driver.Value{{expectVal}},
+		},
+	}
+	con.stmt = fakeStmt
+
 	sql.Register(
-		driverNameWithSQLmw,
-		Driver(&fakeDriver{conn: &fakeConn{stmt: &fakeStmt}}, &NullInterceptor{}),
+		driverName,
+		Driver(&fakeDriver{conn: con}, &NullInterceptor{}),
 	)
 
-	db, err := sql.Open(driverNameWithSQLmw, "")
+	db, err := sql.Open(driverName, "")
 	if err != nil {
 		t.Fatalf("Failed to open: %v", err)
 	}
@@ -36,24 +47,26 @@ func TestDefaultParameterConversion(t *testing.T) {
 	// int32 values are converted by driver.DefaultParameterConverter to
 	// int64
 	queryVal := int32(1)
-	_, err = stmt.Query(queryVal)
+	rows, err := stmt.Query(queryVal)
 	if err != nil {
 		t.Fatalf("Query failed: %s", err)
 	}
 
-	if len(fakeStmt.val) != 1 {
-		t.Fatalf("fakestmt got %d values, expected %d", len(fakeStmt.val), 1)
+	count := 0
+	for rows.Next() {
+		var v int64
+		err := rows.Scan(&v)
+		if err != nil {
+			t.Fatalf("rows.Scan failed, %v", err)
+		}
+		if v != 1 {
+			t.Errorf("converted value is %d, passed value to Query was: %d", v, expectVal)
+		}
+		count++
 	}
 
-	switch v := fakeStmt.val[0].(type) {
-	case int32:
-		t.Errorf("int32 was not converted to int64 **without** using sqlmw")
-	case int64:
-		if v != int64(1) {
-			t.Errorf("converted value is %d, passed value to Query was: %d", v, queryVal)
-		}
-	default:
-		t.Errorf("converted value has type %T, expected int64", fakeStmt.val[0])
+	if count != 1 {
+		t.Fatalf("got too many rows, expected 1, got %d ", 1)
 	}
 }
 
@@ -121,8 +134,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			sql.Register("fake-driver:"+name, Driver(test.fd, &fakeInterceptor{}))
-			db, err := sql.Open("fake-driver:"+name, "dummy")
+			driverName := driverName(t)
+			sql.Register(driverName, Driver(test.fd, &fakeInterceptor{}))
+			db, err := sql.Open(driverName, "dummy")
 			if err != nil {
 				t.Errorf("Failed to open: %v", err)
 			}
