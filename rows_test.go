@@ -4,10 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"log"
+	"fmt"
 	"reflect"
+	"sync/atomic"
 	"testing"
 )
+
+var driverCount = int32(0)
+
+func driverName(t *testing.T) string {
+	c := atomic.LoadInt32(&driverCount)
+	name := fmt.Sprintf("driver-%s-%d", t.Name(), c)
+	c++
+	atomic.StoreInt32(&driverCount, c)
+
+	return name
+}
 
 type rowsCloseInterceptor struct {
 	NullInterceptor
@@ -24,7 +36,7 @@ func (r *rowsCloseInterceptor) RowsClose(ctx context.Context, rows driver.Rows) 
 }
 
 func TestRowsClose(t *testing.T) {
-	driverName := t.Name()
+	driverName := driverName(t)
 	interceptor := rowsCloseInterceptor{}
 
 	con := fakeConn{}
@@ -98,7 +110,7 @@ func TestRowsNext(t *testing.T) {
 		rows: rows,
 	}
 	con.stmt = stmt
-	driverName := t.Name()
+	driverName := driverName(t)
 	interceptor := rowsNextInterceptor{}
 
 	sql.Register(
@@ -188,7 +200,7 @@ func TestRows_LikePGX(t *testing.T) {
 		rows: rows,
 	}
 	con.stmt = stmt
-	driverName := t.Name()
+	driverName := driverName(t)
 	interceptor := rowsNextInterceptor{}
 
 	sql.Register(

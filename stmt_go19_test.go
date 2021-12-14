@@ -11,7 +11,7 @@ import (
 // driver.DefaultParameterConverter is used when neither stmt nor con
 // implements any value converters.
 func TestDefaultParameterConversion(t *testing.T) {
-	driverNameWithSQLmw := t.Name() + "sqlmw"
+	driverName := driverName(t)
 
 	expectVal := int64(1)
 	con := &fakeConn{}
@@ -24,11 +24,11 @@ func TestDefaultParameterConversion(t *testing.T) {
 	con.stmt = fakeStmt
 
 	sql.Register(
-		driverNameWithSQLmw,
+		driverName,
 		Driver(&fakeDriver{conn: con}, &NullInterceptor{}),
 	)
 
-	db, err := sql.Open(driverNameWithSQLmw, "")
+	db, err := sql.Open(driverName, "")
 	if err != nil {
 		t.Fatalf("Failed to open: %v", err)
 	}
@@ -134,8 +134,9 @@ func TestWrappedStmt_CheckNamedValue(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			sql.Register("fake-driver:"+name, Driver(test.fd, &fakeInterceptor{}))
-			db, err := sql.Open("fake-driver:"+name, "dummy")
+			driverName := driverName(t)
+			sql.Register(driverName, Driver(test.fd, &fakeInterceptor{}))
+			db, err := sql.Open(driverName, "dummy")
 			if err != nil {
 				t.Errorf("Failed to open: %v", err)
 			}

@@ -8,11 +8,6 @@ import (
 
 //go:generate go run ./tools/rows_picker_gen.go -o rows_picker.go
 
-// Compile time validation that our types implement the expected interfaces
-var (
-	_ driver.Rows = wrappedRows{}
-)
-
 // RowsUnwrapper must be used by any middleware that provides its own wrapping
 // for driver.Rows. Unwrap should return the original driver.Rows the
 // middleware received. You may wish to wrap the driver.Rows returned by the

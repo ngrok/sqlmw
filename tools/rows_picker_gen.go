@@ -23,7 +23,6 @@ func main() {
 			log.Fatalf("could not create file %q, %v", *fn, err)
 		}
 	}
-	defer out.Close()
 
 	intfs := []string{
 		"NextResultSet",
@@ -51,6 +50,11 @@ func main() {
 
 	fmt.Fprintln(out, "")
 	genWrapRows(out, intfs)
+
+	err = out.Close()
+	if err != nil {
+		log.Fatalf("could close file, %v", err)
+	}
 }
 
 func genComment(w io.Writer) {
