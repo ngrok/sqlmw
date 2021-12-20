@@ -1,5 +1,5 @@
 // Code generated using tool/rows_picker_gen.go DO NOT EDIT.
-// Date: Dec  2 16:24:25
+// Date: Dec 20 09:54:15
 
 package sqlmw
 
