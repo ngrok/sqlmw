@@ -7,11 +7,11 @@ import (
 
 type Interceptor interface {
 	// Connection interceptors
-	ConnBeginTx(context.Context, driver.ConnBeginTx, driver.TxOptions) (driver.Tx, error)
-	ConnPrepareContext(context.Context, driver.ConnPrepareContext, string) (driver.Stmt, error)
+	ConnBeginTx(context.Context, driver.ConnBeginTx, driver.TxOptions) (context.Context, driver.Tx, error)
+	ConnPrepareContext(context.Context, driver.ConnPrepareContext, string) (context.Context, driver.Stmt, error)
 	ConnPing(context.Context, driver.Pinger) error
 	ConnExecContext(context.Context, driver.ExecerContext, string, []driver.NamedValue) (driver.Result, error)
-	ConnQueryContext(context.Context, driver.QueryerContext, string, []driver.NamedValue) (driver.Rows, error)
+	ConnQueryContext(context.Context, driver.QueryerContext, string, []driver.NamedValue) (context.Context, driver.Rows, error)
 
 	// Connector interceptors
 	ConnectorConnect(context.Context, driver.Connector) (driver.Conn, error)
@@ -26,7 +26,7 @@ type Interceptor interface {
 
 	// Stmt interceptors
 	StmtExecContext(context.Context, driver.StmtExecContext, string, []driver.NamedValue) (driver.Result, error)
-	StmtQueryContext(context.Context, driver.StmtQueryContext, string, []driver.NamedValue) (driver.Rows, error)
+	StmtQueryContext(context.Context, driver.StmtQueryContext, string, []driver.NamedValue) (context.Context, driver.Rows, error)
 	StmtClose(context.Context, driver.Stmt) error
 
 	// Tx interceptors
@@ -41,12 +41,14 @@ var _ Interceptor = NullInterceptor{}
 // only need to define the specific functions they are interested in intercepting.
 type NullInterceptor struct{}
 
-func (NullInterceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (driver.Tx, error) {
-	return conn.BeginTx(ctx, txOpts)
+func (NullInterceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {
+	t, err := conn.BeginTx(ctx, txOpts)
+	return ctx, t, err
 }
 
-func (NullInterceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (driver.Stmt, error) {
-	return conn.PrepareContext(ctx, query)
+func (NullInterceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (context.Context, driver.Stmt, error) {
+	s, err := conn.PrepareContext(ctx, query)
+	return ctx, s, err
 }
 
 func (NullInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
@@ -57,8 +59,9 @@ func (NullInterceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCo
 	return conn.ExecContext(ctx, query, args)
 }
 
-func (NullInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-	return conn.QueryContext(ctx, query, args)
+func (NullInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
+	r, err := conn.QueryContext(ctx, query, args)
+	return ctx, r, err
 }
 
 func (NullInterceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
@@ -85,8 +88,9 @@ func (NullInterceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExec
 	return stmt.ExecContext(ctx, args)
 }
 
-func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, _ string, args []driver.NamedValue) (driver.Rows, error) {
-	return stmt.QueryContext(ctx, args)
+func (NullInterceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, _ string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
+	r, err := stmt.QueryContext(ctx, args)
+	return ctx, r, err
 }
 
 func (NullInterceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {

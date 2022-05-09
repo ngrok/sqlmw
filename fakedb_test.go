@@ -16,6 +16,12 @@ func (d *fakeDriver) Open(_ string) (driver.Conn, error) {
 	return d.conn, nil
 }
 
+type fakeTx struct{}
+
+func (f fakeTx) Commit() error { return nil }
+
+func (f fakeTx) Rollback() error { return nil }
+
 type fakeStmt struct {
 	rows   driver.Rows
 	called bool // nolint:structcheck // ignore unused warning, it is accessed via reflection
@@ -42,6 +48,10 @@ func (s fakeStmt) Exec(_ []driver.Value) (driver.Result, error) {
 }
 
 func (s fakeStmt) Query(_ []driver.Value) (driver.Rows, error) {
+	return s.rows, nil
+}
+
+func (s fakeStmt) QueryContext(_ context.Context, _ []driver.NamedValue) (driver.Rows, error) {
 	return s.rows, nil
 }
 
@@ -184,6 +194,7 @@ type fakeConn struct {
 	called          bool // nolint:structcheck // ignore unused warning, it is accessed via reflection
 	rowsCloseCalled bool
 	stmt            driver.Stmt
+	tx              driver.Tx
 }
 
 type fakeConnWithCheckNamedValue struct {
@@ -202,9 +213,13 @@ func (c *fakeConn) PrepareContext(_ context.Context, _ string) (driver.Stmt, err
 	return c.stmt, nil
 }
 
+func (c *fakeConn) ExecContext(_ context.Context, _ string, _ []driver.NamedValue) (driver.Result, error) {
+	return nil, nil
+}
+
 func (c *fakeConn) Close() error { return nil }
 
-func (c *fakeConn) Begin() (driver.Tx, error) { return nil, nil }
+func (c *fakeConn) Begin() (driver.Tx, error) { return c.tx, nil }
 
 func (c *fakeConn) QueryContext(_ context.Context, _ string, nvs []driver.NamedValue) (driver.Rows, error) {
 	if c.stmt == nil {
