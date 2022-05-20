@@ -7,13 +7,15 @@ import (
 	"testing"
 )
 
+type connCtxKey string
+
 const (
-	connRowContextKey    = "context"
-	connRowContextValue  = "value"
-	connStmtContextKey   = "stmtcontext"
-	connStmtContextValue = "stmtvalue"
-	connTxContextKey     = "txcontext"
-	connTxContextValue   = "txvalue"
+	connRowContextKey    connCtxKey = "context"
+	connRowContextValue  string     = "value"
+	connStmtContextKey   connCtxKey = "stmtcontext"
+	connStmtContextValue string     = "stmtvalue"
+	connTxContextKey     connCtxKey = "txcontext"
+	connTxContextValue   string     = "txvalue"
 )
 
 type connTestInterceptor struct {
@@ -204,12 +206,14 @@ func TestConnBeginTx_PassWrappedTxContextCommit(t *testing.T) {
 		t.Fatalf("Prepare failed: %s", err)
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		t.Fatalf("Commit failed: %s", err)
+	}
 
 	if !ti.TxCommitValid {
 		t.Error("TxCommit context not valid")
 	}
-
 }
 func TestConnBeginTx_PassWrappedTxContextRollback(t *testing.T) {
 	driverName := driverName(t)
@@ -241,7 +245,10 @@ func TestConnBeginTx_PassWrappedTxContextRollback(t *testing.T) {
 		t.Fatalf("Prepare failed: %s", err)
 	}
 
-	tx.Rollback()
+	err = tx.Rollback()
+	if err != nil {
+		t.Fatalf("Rollback failed: %s", err)
+	}
 
 	if !ti.TxRollbackValid {
 		t.Error("TxRollback context not valid")
