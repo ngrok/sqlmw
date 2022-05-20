@@ -7,9 +7,11 @@ import (
 	"testing"
 )
 
+type stmtCtxKey string
+
 const (
-	stmtRowContextKey   = "rowcontext"
-	stmtRowContextValue = "rowvalue"
+	stmtRowContextKey   stmtCtxKey = "rowcontext"
+	stmtRowContextValue string     = "rowvalue"
 )
 
 type stmtTestInterceptor struct {
