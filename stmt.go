@@ -56,7 +56,7 @@ func (s wrappedStmt) ExecContext(ctx context.Context, args []driver.NamedValue) 
 
 func (s wrappedStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
 	wrappedParent := wrappedParentStmt{Stmt: s.parent}
-	rows, err = s.intr.StmtQueryContext(ctx, wrappedParent, s.query, args)
+	ctx, rows, err = s.intr.StmtQueryContext(ctx, wrappedParent, s.query, args)
 	if err != nil {
 		return nil, err
 	}

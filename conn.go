@@ -44,7 +44,7 @@ func (c wrappedConn) Begin() (driver.Tx, error) {
 
 func (c wrappedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx driver.Tx, err error) {
 	wrappedParent := wrappedParentConn{c.parent}
-	tx, err = c.intr.ConnBeginTx(ctx, wrappedParent, opts)
+	ctx, tx, err = c.intr.ConnBeginTx(ctx, wrappedParent, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (c wrappedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx dri
 
 func (c wrappedConn) PrepareContext(ctx context.Context, query string) (stmt driver.Stmt, err error) {
 	wrappedParent := wrappedParentConn{c.parent}
-	stmt, err = c.intr.ConnPrepareContext(ctx, wrappedParent, query)
+	ctx, stmt, err = c.intr.ConnPrepareContext(ctx, wrappedParent, query)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (c wrappedConn) QueryContext(ctx context.Context, query string, args []driv
 	}
 
 	wrappedParent := wrappedParentConn{c.parent}
-	rows, err = c.intr.ConnQueryContext(ctx, wrappedParent, query, args)
+	ctx, rows, err = c.intr.ConnQueryContext(ctx, wrappedParent, query, args)
 	if err != nil {
 		return nil, err
 	}
