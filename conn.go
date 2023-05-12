@@ -43,7 +43,7 @@ func (c wrappedConn) Begin() (driver.Tx, error) {
 }
 
 func (c wrappedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx driver.Tx, err error) {
-	wrappedParent := wrappedParentConn{c.parent}
+	wrappedParent := WrappedParentConn{c.parent}
 	ctx, tx, err = c.intr.ConnBeginTx(ctx, wrappedParent, opts)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (c wrappedConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx dri
 }
 
 func (c wrappedConn) PrepareContext(ctx context.Context, query string) (stmt driver.Stmt, err error) {
-	wrappedParent := wrappedParentConn{c.parent}
+	wrappedParent := WrappedParentConn{c.parent}
 	ctx, stmt, err = c.intr.ConnPrepareContext(ctx, wrappedParent, query)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (c wrappedConn) Exec(query string, args []driver.Value) (driver.Result, err
 }
 
 func (c wrappedConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (r driver.Result, err error) {
-	wrappedParent := wrappedParentConn{c.parent}
+	wrappedParent := WrappedParentConn{c.parent}
 	r, err = c.intr.ConnExecContext(ctx, wrappedParent, query, args)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (c wrappedConn) QueryContext(ctx context.Context, query string, args []driv
 		return nil, driver.ErrSkip
 	}
 
-	wrappedParent := wrappedParentConn{c.parent}
+	wrappedParent := WrappedParentConn{c.parent}
 	ctx, rows, err = c.intr.ConnQueryContext(ctx, wrappedParent, query, args)
 	if err != nil {
 		return nil, err
@@ -116,11 +116,11 @@ func (c wrappedConn) QueryContext(ctx context.Context, query string, args []driv
 	return wrapRows(ctx, c.intr, rows), nil
 }
 
-type wrappedParentConn struct {
+type WrappedParentConn struct {
 	driver.Conn
 }
 
-func (c wrappedParentConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx driver.Tx, err error) {
+func (c WrappedParentConn) BeginTx(ctx context.Context, opts driver.TxOptions) (tx driver.Tx, err error) {
 	if connBeginTx, ok := c.Conn.(driver.ConnBeginTx); ok {
 		return connBeginTx.BeginTx(ctx, opts)
 	}
@@ -133,7 +133,7 @@ func (c wrappedParentConn) BeginTx(ctx context.Context, opts driver.TxOptions) (
 	}
 }
 
-func (c wrappedParentConn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
+func (c WrappedParentConn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	if connPrepareCtx, ok := c.Conn.(driver.ConnPrepareContext); ok {
 		return connPrepareCtx.PrepareContext(ctx, query)
 	}
@@ -146,7 +146,7 @@ func (c wrappedParentConn) PrepareContext(ctx context.Context, query string) (dr
 	}
 }
 
-func (c wrappedParentConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (r driver.Result, err error) {
+func (c WrappedParentConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (r driver.Result, err error) {
 	if execContext, ok := c.Conn.(driver.ExecerContext); ok {
 		return execContext.ExecContext(ctx, query, args)
 	}
@@ -163,7 +163,7 @@ func (c wrappedParentConn) ExecContext(ctx context.Context, query string, args [
 	}
 }
 
-func (c wrappedParentConn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
+func (c WrappedParentConn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (rows driver.Rows, err error) {
 	if queryerContext, ok := c.Conn.(driver.QueryerContext); ok {
 		return queryerContext.QueryContext(ctx, query, args)
 	}

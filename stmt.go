@@ -46,7 +46,7 @@ func (s wrappedStmt) Query(args []driver.Value) (rows driver.Rows, err error) {
 }
 
 func (s wrappedStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (res driver.Result, err error) {
-	wrappedParent := wrappedParentStmt{Stmt: s.parent}
+	wrappedParent := WrappedParentStmt{Stmt: s.parent, Context: s.ctx}
 	res, err = s.intr.StmtExecContext(ctx, wrappedParent, s.query, args)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (s wrappedStmt) ExecContext(ctx context.Context, args []driver.NamedValue) 
 }
 
 func (s wrappedStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
-	wrappedParent := wrappedParentStmt{Stmt: s.parent}
+	wrappedParent := WrappedParentStmt{Stmt: s.parent, Context: s.ctx}
 	ctx, rows, err = s.intr.StmtQueryContext(ctx, wrappedParent, s.query, args)
 	if err != nil {
 		return nil, err
@@ -71,11 +71,12 @@ func (s wrappedStmt) ColumnConverter(idx int) driver.ValueConverter {
 	return driver.DefaultParameterConverter
 }
 
-type wrappedParentStmt struct {
+type WrappedParentStmt struct {
 	driver.Stmt
+	Context context.Context
 }
 
-func (s wrappedParentStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
+func (s WrappedParentStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (rows driver.Rows, err error) {
 	if stmtQueryContext, ok := s.Stmt.(driver.StmtQueryContext); ok {
 		return stmtQueryContext.QueryContext(ctx, args)
 	}
@@ -92,7 +93,7 @@ func (s wrappedParentStmt) QueryContext(ctx context.Context, args []driver.Named
 	return s.Stmt.Query(dargs)
 }
 
-func (s wrappedParentStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (res driver.Result, err error) {
+func (s WrappedParentStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (res driver.Result, err error) {
 	if stmtExecContext, ok := s.Stmt.(driver.StmtExecContext); ok {
 		return stmtExecContext.ExecContext(ctx, args)
 	}
