@@ -1,3 +1,4 @@
+//go:build go1.10
 // +build go1.10
 
 package sqlmw
@@ -15,6 +16,12 @@ type wrappedConnector struct {
 var (
 	_ driver.Connector = wrappedConnector{}
 )
+
+// WrapConnector returns the supplied driver.Connector wrapped in a new object that has all of its calls intercepted by
+// the Interceptor in the supplied driver.
+func WrapConnector(driverRef *wrappedDriver, connector driver.Connector) wrappedConnector {
+	return wrappedConnector{driverRef: driverRef, parent: connector}
+}
 
 func (c wrappedConnector) Connect(ctx context.Context) (conn driver.Conn, err error) {
 	conn, err = c.driverRef.intr.ConnectorConnect(ctx, c.parent)
