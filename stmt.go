@@ -15,10 +15,11 @@ type wrappedStmt struct {
 
 // Compile time validation that our types implement the expected interfaces
 var (
-	_ driver.Stmt             = wrappedStmt{}
-	_ driver.StmtExecContext  = wrappedStmt{}
-	_ driver.StmtQueryContext = wrappedStmt{}
-	_ driver.ColumnConverter  = wrappedStmt{}
+	_ driver.Stmt              = wrappedStmt{}
+	_ driver.StmtExecContext   = wrappedStmt{}
+	_ driver.StmtQueryContext  = wrappedStmt{}
+	_ driver.ColumnConverter   = wrappedStmt{}
+	_ driver.NamedValueChecker = wrappedStmt{}
 )
 
 func (s wrappedStmt) Close() (err error) {
@@ -107,4 +108,16 @@ func (s wrappedParentStmt) ExecContext(ctx context.Context, args []driver.NamedV
 		return nil, ctx.Err()
 	}
 	return s.Exec(dargs)
+}
+
+func (s wrappedStmt) CheckNamedValue(v *driver.NamedValue) error {
+	if checker, ok := s.parent.(driver.NamedValueChecker); ok {
+		return checker.CheckNamedValue(v)
+	}
+
+	if checker, ok := s.conn.parent.(driver.NamedValueChecker); ok {
+		return checker.CheckNamedValue(v)
+	}
+
+	return defaultCheckNamedValue(v)
 }
